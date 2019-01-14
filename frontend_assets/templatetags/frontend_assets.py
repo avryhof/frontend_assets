@@ -43,6 +43,16 @@ def fontawesome5_javascript(shim=False):
 
 
 @register.simple_tag
+def jquery(slim=False):
+    if slim:
+        jquery_url = join_url(static_root, 'js', 'jquery-3.3.1.slim.min.js')
+    else:
+        jquery_url = join_url(static_root, 'js', 'jquery-3.3.1.min.js')
+
+    return render_javascript(jquery_url)
+
+
+@register.simple_tag
 def modernizr():
     modernizr_url = join_url(static_root, 'js', 'modernizr.js')
 
