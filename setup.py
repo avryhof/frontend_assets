@@ -46,6 +46,7 @@ setup(
     description=description,
     long_description=read('README.md'),
     include_package_data=True,
+    package_data={'': ['license.txt']},
     zip_safe=False,
     classifiers=[
         'Development Status :: 5 - Production/Stable',

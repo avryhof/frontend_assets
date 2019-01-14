@@ -5,7 +5,7 @@
 from django import template
 from django.conf import settings
 
-from frontend_assets.utils import join_url, render_css, render_javascript
+from .utils import join_url, render_css, render_javascript
 
 register = template.Library()
 

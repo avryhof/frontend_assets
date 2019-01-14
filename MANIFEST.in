@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive-include frontend_assets *
+global-exclude *.pyc

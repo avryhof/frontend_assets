@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 
 import sys
 
+from django.utils.safestring import mark_safe
+
 if sys.version_info[0] > 2:
     from future.types.newstr import unicode
     from future.standard_library import install_aliases
@@ -44,7 +46,7 @@ def render_css(css_files):
     for css_file in css_files:
         retn_list.append('<link rel="stylesheet" href="%s"/>' % css_file)
 
-    return '\n'.join(retn_list)
+    return mark_safe('\n'.join(retn_list))
 
 
 def render_javascript(javascripts):
@@ -56,4 +58,4 @@ def render_javascript(javascripts):
     for javascript in javascripts:
         retn_list.append('<script src="%s" type="text/javascript"></script>' % javascript)
 
-    return '\n'.join(retn_list)
+    return mark_safe('\n'.join(retn_list))
