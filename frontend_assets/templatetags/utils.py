@@ -59,3 +59,8 @@ def render_javascript(javascripts):
         retn_list.append('<script src="%s" type="text/javascript"></script>' % javascript)
 
     return mark_safe('\n'.join(retn_list))
+
+def render_javascript_code(code_parts):
+    code = '\n'.join(code_parts)
+
+    return mark_safe('<script>%s</script>' % code)

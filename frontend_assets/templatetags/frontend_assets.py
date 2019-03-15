@@ -64,3 +64,50 @@ def ieshiv():
     ieshiv_url = join_url(static_root, 'js', 'ieshiv.js')
 
     return render_javascript(ieshiv_url)
+
+
+@register.simple_tag
+def leaflet_css():
+    leaflet_css_url = join_url(static_root, 'css', 'leaflet.css')
+
+    return render_css(leaflet_css_url)
+
+
+@register.simple_tag
+def leaflet_javascript():
+    leaflet_js_url = join_url(static_root, 'js', 'leaflet.js')
+
+    javascripts = [leaflet_js_url]
+
+    return render_javascript(javascripts)
+
+
+@register.simple_tag
+def leaflet_header():
+    header_code = leaflet_css + leaflet_javascript
+
+    return header_code
+
+
+@regster.simple_tag
+def leaflet_map(latitude=None, longitude=None, zoom=16, map_prefix='leaflet', map_tiles=False, map_attr=False):
+    if not map_tiles:
+        map_tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+        map_attr = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' \
+                   '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, '
+    map_id = '%s_map' % map_prefix
+    div = '<div id="%s"></div>' % map_id
+    coords = 'var %s_coords = [%s, %s]' % (map_prefix, latitude, longitude)
+    map = 'var %s = L.map(\'%s\').setView(%s_coords, %s);' % (map_id, map_id, map_prefix, zoom)
+    tile_layer = 'L.tileLayer(\'%s\', {maxZoom: 18, attribution: \'%s\', id: \'%s_streets\'}).addTo(%s);' % (
+        map_tiles, map_attr, map_prefix, map_id)
+
+    return mark_safe(div) + render_javascript_code([coords, map, tile_layer])
+
+
+@regster.simple_tag
+def leaflet_marker(map_id, name, latitude, longitude):
+    coords = 'var %s_marker_coords = [%s, %s]' % (name, latitude, longitude)
+    code = 'L.marker(coords).addTo(\'%s\');' % map_id
+
+    return render_javascript_code([coords, code])
