@@ -89,7 +89,7 @@ def leaflet_header():
     return header_code
 
 
-@regster.simple_tag
+@register.simple_tag
 def leaflet_map(latitude=None, longitude=None, zoom=16, map_prefix='leaflet', map_tiles=False, map_attr=False):
     if not map_tiles:
         map_tiles = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -105,7 +105,7 @@ def leaflet_map(latitude=None, longitude=None, zoom=16, map_prefix='leaflet', ma
     return mark_safe(div) + render_javascript_code([coords, map, tile_layer])
 
 
-@regster.simple_tag
+@register.simple_tag
 def leaflet_marker(map_id, name, latitude, longitude):
     coords = 'var %s_marker_coords = [%s, %s]' % (name, latitude, longitude)
     code = 'L.marker(coords).addTo(\'%s\');' % map_id
