@@ -113,6 +113,6 @@ def leaflet_map(latitude=None, longitude=None, zoom=16, map_prefix='leaflet', ma
 def leaflet_marker(map_prefix='leaflet', latitude=None, longitude=None):
     map_id = '%s_map' % map_prefix
     coords = 'var %s_marker_coords = [%s, %s];' % (map_prefix, latitude, longitude)
-    code = 'L.marker(%s_marker_coords).addTo(\'%s\');' % (map_prefix, map_id)
+    code = 'L.marker(%s_marker_coords).addTo(%s);' % (map_prefix, map_id)
 
     return render_javascript_code([coords, code])
