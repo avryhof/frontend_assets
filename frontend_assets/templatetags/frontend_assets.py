@@ -87,7 +87,7 @@ def leaflet_header():
     leafletcss = leaflet_css()
     leafletjs = leaflet_javascript()
 
-    header_code = leafletcss + leafletjavascript
+    header_code = leafletcss + leafletjs
 
     return header_code
 
