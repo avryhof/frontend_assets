@@ -84,7 +84,10 @@ def leaflet_javascript():
 
 @register.simple_tag
 def leaflet_header():
-    header_code = leaflet_css + leaflet_javascript
+    leafletcss = leaflet_css()
+    leafletjs = leaflet_javascript()
+
+    header_code = leafletcss + leafletjavascript
 
     return header_code
 
