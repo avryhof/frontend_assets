@@ -101,7 +101,7 @@ def leaflet_map(latitude=None, longitude=None, zoom=16, map_prefix='leaflet', ma
                    '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, '
     map_id = '%s_map' % map_prefix
     div = '<div id="%s"></div>' % map_id
-    coords = 'var %s_coords = [%s, %s]' % (map_prefix, latitude, longitude)
+    coords = 'var %s_coords = [%s, %s];' % (map_prefix, latitude, longitude)
     map = 'var %s = L.map(\'%s\').setView(%s_coords, %s);' % (map_id, map_id, map_prefix, zoom)
     tile_layer = 'L.tileLayer(\'%s\', {maxZoom: 18, attribution: \'%s\', id: \'%s_streets\'}).addTo(%s);' % (
         map_tiles, map_attr, map_prefix, map_id)
@@ -113,6 +113,6 @@ def leaflet_map(latitude=None, longitude=None, zoom=16, map_prefix='leaflet', ma
 def leaflet_marker(map_prefix='leaflet', latitude=None, longitude=None):
     map_id = '%s_map' % map_prefix
     coords = 'var %s_marker_coords = [%s, %s];' % (map_prefix, latitude, longitude)
-    code = 'L.marker(coords).addTo(\'%s\');' % map_id
+    code = 'L.marker(%s_marker_coords).addTo(\'%s\');' % (map_prefix, map_id)
 
     return render_javascript_code([coords, code])
