@@ -60,6 +60,7 @@ def render_javascript(javascripts):
 
     return mark_safe('\n'.join(retn_list))
 
+
 def render_javascript_code(code_parts):
     code = '\n'.join(code_parts)
 
