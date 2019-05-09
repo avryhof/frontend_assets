@@ -58,5 +58,7 @@ setup(
         "django",
         "django-bootstrap4",
         "future",
+        "requests",
+        "subresource-integrity"
     ],
 )
