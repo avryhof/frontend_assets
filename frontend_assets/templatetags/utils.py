@@ -1,7 +1,11 @@
 from __future__ import unicode_literals
 
 import sys
+import warnings
 
+import requests
+import subresource_integrity
+from django.conf import settings
 from django.utils.safestring import mark_safe
 
 if sys.version_info[0] > 2:
@@ -10,6 +14,25 @@ if sys.version_info[0] > 2:
 
     # For the future library so we can be Python 2 and 3 compatible
     install_aliases()
+
+
+def get_subresource_integrity(script_path):
+    if 'https' in script_path:
+        resource = requests.get(script_path, verify=True)
+        resource_text = resource.text
+
+    elif 'http' in script_path:
+        resource = requests.get(script_path)
+        warnings.warn("SRI over HTTP. It is recommended to only load remote scripts over HTTPS.")
+        resource_text = resource.text
+
+    else:
+        script_file_path = script_path.replace(settings.STATIC_URL, settings.STATIC_ROOT)
+        with open(script_file_path, 'r') as sf:
+            resource_text = sf.read(sf)
+            sf.close()
+
+    return subresource_integrity.render(resource_text)
 
 
 def join_url(*path_parts):
@@ -44,7 +67,25 @@ def render_css(css_files):
         css_files = [css_files]
 
     for css_file in css_files:
-        retn_list.append('<link rel="stylesheet" href="%s"/>' % css_file)
+        if isinstance(css_file, str):
+            css_file = {
+                'href': css_file,
+                'integrity': get_subresource_integrity(css_file)
+            }
+
+        if isinstance(css_file, dict):
+            href = css_file.get('href', '')
+            integrity = css_file.get('integrity')
+            if not integrity:
+                integrity = get_subresource_integrity(href)
+
+            retn_list.append('<link rel="stylesheet" href="%s" integrity="%s" crossorigin="anonymous" />' % (
+                href,
+                integrity
+            ))
+
+        else:
+            retn_list.append('<link rel="stylesheet" href="%s"/>' % css_file)
 
     return mark_safe('\n'.join(retn_list))
 
@@ -56,7 +97,25 @@ def render_javascript(javascripts):
         javascripts = [javascripts]
 
     for javascript in javascripts:
-        retn_list.append('<script src="%s" type="text/javascript"></script>' % javascript)
+        if isinstance(javascript, str):
+            javascript = {
+                'src': javascript,
+                'integrity': get_subresource_integrity(javascript)
+            }
+
+        if isinstance(javascript, dict):
+            src = javascript.get('src')
+            integrity = javascript.get('integrity')
+            if not integrity:
+                integrity = get_subresource_integrity(src)
+
+            retn_list.append('<script src="%s" integrity="%s" crossorigin="anonymous"></script>' % (
+                src,
+                integrity
+            ))
+
+        else:
+            retn_list.append('<script src="%s" type="text/javascript"></script>' % javascript)
 
     return mark_safe('\n'.join(retn_list))
 
@@ -64,4 +123,6 @@ def render_javascript(javascripts):
 def render_javascript_code(code_parts):
     code = '\n'.join(code_parts)
 
-    return mark_safe('<script>%s</script>' % code)
+    integrity = subresource_integrity.render(code)
+
+    return mark_safe('<script integrity="%s">%s</script>' % (integrity, code))
