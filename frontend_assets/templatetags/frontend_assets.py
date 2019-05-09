@@ -2,6 +2,9 @@
 @copyright Amos Vryhof
 
 """
+import json
+import os
+
 from django import template
 from django.conf import settings
 from django.utils.safestring import mark_safe
@@ -12,6 +15,10 @@ register = template.Library()
 
 static_root = getattr(settings, 'STATIC_URL', '/static/')
 use_cdn_default = getattr(settings, 'FRONTEND_USE_CDN', False)
+
+cdn_config_file = open(os.path.join(settings.STATIC_ROOT, 'cdn.json'))
+cdn_config = json.load(cdn_config_file)
+cdn_config_file.close()
 
 
 @register.simple_tag
@@ -95,9 +102,10 @@ def jquery(slim=False, use_cdn=use_cdn_default):
 
     else:
         if use_cdn:
+            cdn = cdn_config.get('jquery')
             jquery_url = {
-                'src': 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js',
-                'integrity': 'sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo='
+                'src': cdn.get('javascript_url'),
+                'integrity': cdn.get('javascript_integrity')
             }
         else:
             jquery_url = join_url(static_root, 'js', 'jquery-3.3.1.min.js')
@@ -108,9 +116,10 @@ def jquery(slim=False, use_cdn=use_cdn_default):
 @register.simple_tag
 def modernizr(use_cdn=use_cdn_default):
     if use_cdn:
+        cdn = cdn_config.get('modernizr')
         modernizr_url = {
-            'src': 'https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js',
-            'integrity': 'sha256-0rguYS0qgS6L4qVzANq4kjxPLtvnp5nn2nB5G1lWRv4='
+            'src': cdn.get('javascript_url'),
+            'integrity': cdn.get('javascript_integrity')
         }
     else:
         modernizr_url = join_url(static_root, 'js', 'modernizr.js')
@@ -128,9 +137,10 @@ def ieshiv():
 @register.simple_tag
 def leaflet_css(use_cdn=use_cdn_default):
     if use_cdn:
+        cdn = cdn_config.get('leaflet')
         leaflet_css_url = {
-            'href': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css',
-            'integrity': 'sha256-SHMGCYmST46SoyGgo4YR/9AlK1vf3ff84Aq9yK4hdqM='
+            'href': cdn.get('css_url'),
+            'integrity': cdn.get('css_integrity')
         }
     else:
         leaflet_css_url = join_url(static_root, 'css', 'leaflet.css')
@@ -141,9 +151,10 @@ def leaflet_css(use_cdn=use_cdn_default):
 @register.simple_tag
 def leaflet_javascript(use_cdn=use_cdn_default):
     if use_cdn:
+        cdn = cdn_config.get('leaflet')
         leaflet_js_url = {
-            'src': 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js',
-            'integrity': 'sha256-EErZamuLefUnbMBQbsEqu1USa+btR2oIlCpBJbyD4/g='
+            'src': cdn.get('javascript_url'),
+            'integrity': cdn.get('javascript_integrity')
         }
     else:
         leaflet_js_url = join_url(static_root, 'js', 'leaflet.js')
