@@ -16,7 +16,7 @@ register = template.Library()
 static_root = getattr(settings, 'STATIC_URL', '/static/')
 use_cdn_default = getattr(settings, 'FRONTEND_USE_CDN', False)
 
-cdn_config_file = open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static' 'cdn.json'))
+cdn_config_file = open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'cdn.json'))
 cdn_config = json.load(cdn_config_file)
 cdn_config_file.close()
 
