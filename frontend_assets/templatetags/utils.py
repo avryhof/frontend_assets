@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import os
 import sys
 import warnings
 
@@ -17,22 +18,25 @@ if sys.version_info[0] > 2:
 
 
 def get_subresource_integrity(script_path):
-    if 'https' in script_path:
+    if "https" in script_path:
         resource = requests.get(script_path, verify=True)
         resource_text = resource.text
 
-    elif 'http' in script_path:
+    elif "http" in script_path:
         resource = requests.get(script_path)
         warnings.warn("SRI over HTTP. It is recommended to only load remote scripts over HTTPS.")
         resource_text = resource.text
 
     else:
-        script_file_path = script_path.replace(settings.STATIC_URL, settings.STATIC_ROOT)
-        with open(script_file_path, 'r') as sf:
-            resource_text = sf.read(sf)
+        script_path_normalized = os.path.join(*script_path.split("/"))
+        static_root_normalized = os.path.join(*os.path.split(os.path.dirname(settings.STATIC_ROOT)))
+        script_file_path = os.path.join(static_root_normalized, script_path_normalized)
+
+        with open(script_file_path, "r") as sf:
+            resource_text = sf.read()
             sf.close()
 
-    return subresource_integrity.render(resource_text)
+    return subresource_integrity.render(resource_text.encode())
 
 
 def join_url(*path_parts):
@@ -40,22 +44,22 @@ def join_url(*path_parts):
     path_parts = list(path_parts)
 
     is_root = False
-    if path_parts[0] and path_parts[0][0] == '/':
+    if path_parts[0] and path_parts[0][0] == "/":
         is_root = True
 
     for path_part in path_parts:
         if path_part:
-            if isinstance(path_part, (str, unicode)) and '/' in path_part:
-                pieces = path_part.split('/')
+            if isinstance(path_part, (str, unicode)) and "/" in path_part:
+                pieces = path_part.split("/")
                 path_pieces.append(join_url(*pieces))
 
-            elif isinstance(path_part, (str, unicode)) and '/' not in path_part:
+            elif isinstance(path_part, (str, unicode)) and "/" not in path_part:
                 path_pieces.append(path_part)
 
-    path_string = '/'.join(path_pieces)
+    path_string = "/".join(path_pieces)
 
     if is_root:
-        path_string = '/%s' % path_string
+        path_string = "/%s" % path_string
 
     return path_string
 
@@ -68,26 +72,22 @@ def render_css(css_files):
 
     for css_file in css_files:
         if isinstance(css_file, str):
-            css_file = {
-                'href': css_file,
-                'integrity': get_subresource_integrity(css_file)
-            }
+            css_file = {"href": css_file, "integrity": get_subresource_integrity(css_file)}
 
         if isinstance(css_file, dict):
-            href = css_file.get('href', '')
-            integrity = css_file.get('integrity')
+            href = css_file.get("href", "")
+            integrity = css_file.get("integrity")
             if not integrity:
                 integrity = get_subresource_integrity(href)
 
-            retn_list.append('<link rel="stylesheet" href="%s" integrity="%s" crossorigin="anonymous" />' % (
-                href,
-                integrity
-            ))
+            retn_list.append(
+                '<link rel="stylesheet" href="%s" integrity="%s" crossorigin="anonymous" />' % (href, integrity)
+            )
 
         else:
             retn_list.append('<link rel="stylesheet" href="%s"/>' % css_file)
 
-    return mark_safe('\n'.join(retn_list))
+    return mark_safe("\n".join(retn_list))
 
 
 def render_javascript(javascripts):
@@ -98,30 +98,24 @@ def render_javascript(javascripts):
 
     for javascript in javascripts:
         if isinstance(javascript, str):
-            javascript = {
-                'src': javascript,
-                'integrity': get_subresource_integrity(javascript)
-            }
+            javascript = {"src": javascript, "integrity": get_subresource_integrity(javascript)}
 
         if isinstance(javascript, dict):
-            src = javascript.get('src')
-            integrity = javascript.get('integrity')
+            src = javascript.get("src")
+            integrity = javascript.get("integrity")
             if not integrity:
                 integrity = get_subresource_integrity(src)
 
-            retn_list.append('<script src="%s" integrity="%s" crossorigin="anonymous"></script>' % (
-                src,
-                integrity
-            ))
+            retn_list.append('<script src="%s" integrity="%s" crossorigin="anonymous"></script>' % (src, integrity))
 
         else:
             retn_list.append('<script src="%s" type="text/javascript"></script>' % javascript)
 
-    return mark_safe('\n'.join(retn_list))
+    return mark_safe("\n".join(retn_list))
 
 
 def render_javascript_code(code_parts):
-    code = '\n'.join(code_parts)
+    code = "\n".join(code_parts)
 
     integrity = subresource_integrity.render(code)
 
