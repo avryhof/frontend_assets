@@ -13,7 +13,8 @@ from .utils import join_url, render_css, render_javascript, render_javascript_co
 
 register = template.Library()
 
-static_root = getattr(settings, 'STATIC_URL', '/static/')
+static_url = getattr(settings, 'STATIC_URL', '/static/')
+static_path = getattr(settings, "STATIC_ROOT", False)
 use_cdn_default = getattr(settings, 'FRONTEND_USE_CDN', False)
 
 cdn_config_file = open(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'cdn.json'))
@@ -30,7 +31,7 @@ def fontawesome4_css(use_cdn=use_cdn_default):
         }
 
     else:
-        font_awesome_url = join_url(static_root, 'css', 'font-awesome-4.min.css')
+        font_awesome_url = join_url(static_url, 'css', 'font-awesome-4.min.css')
 
     return render_css(font_awesome_url)
 
@@ -50,10 +51,10 @@ def fontawesome5_css(shim=False, use_cdn=use_cdn_default):
             })
 
     else:
-        font_awesome_urls = [join_url(static_root, 'css', 'all.min.css')]
+        font_awesome_urls = [join_url(static_url, 'css', 'all.min.css')]
 
         if shim:
-            font_awesome_urls.append(join_url(static_root, 'css', 'v4-shims.min.css'))
+            font_awesome_urls.append(join_url(static_url, 'css', 'v4-shims.min.css'))
 
     return render_css(font_awesome_urls)
 
@@ -71,20 +72,20 @@ def fontawesome5_javascript(shim=False, use_cdn=use_cdn_default):
         }
 
     else:
-        fa_js_url = join_url(static_root, 'js', 'fontawesome.min.js')
-        fa_js_all = join_url(static_root, 'js', 'all.min.js')
+        fa_js_url = join_url(static_url, 'js', 'fontawesome.min.js')
+        fa_js_all = join_url(static_url, 'js', 'all.min.js')
 
     javascripts = [fa_js_url, fa_js_all]
 
     if shim:
         if use_cdn:
-            javascripts.append( {
+            javascripts.append({
                 'src': 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/js/v4-shims.min.js',
                 'integrity': 'sha256-Jk9FySjBvE0bRH9tO3VrPL8zuR+G6AhksO7bEdvXk5w='
             })
 
         else:
-            javascripts.append(join_url(static_root, 'js', 'v4-shims.min.js'))
+            javascripts.append(join_url(static_url, 'js', 'v4-shims.min.js'))
 
     return render_javascript(javascripts)
 
@@ -98,7 +99,7 @@ def jquery(slim=False, use_cdn=use_cdn_default):
                 'integrity': 'sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8='
             }
         else:
-            jquery_url = join_url(static_root, 'js', 'jquery-3.3.1.slim.min.js')
+            jquery_url = join_url(static_url, 'js', 'jquery-3.3.1.slim.min.js')
 
     else:
         if use_cdn:
@@ -108,7 +109,7 @@ def jquery(slim=False, use_cdn=use_cdn_default):
                 'integrity': cdn.get('javascript_integrity')
             }
         else:
-            jquery_url = join_url(static_root, 'js', 'jquery-3.3.1.min.js')
+            jquery_url = join_url(static_url, 'js', 'jquery-3.3.1.min.js')
 
     return render_javascript(jquery_url)
 
@@ -122,14 +123,14 @@ def modernizr(use_cdn=use_cdn_default):
             'integrity': cdn.get('javascript_integrity')
         }
     else:
-        modernizr_url = join_url(static_root, 'js', 'modernizr.js')
+        modernizr_url = join_url(static_url, 'js', 'modernizr.js')
 
     return render_javascript(modernizr_url)
 
 
 @register.simple_tag
 def ieshiv():
-    ieshiv_url = join_url(static_root, 'js', 'ieshiv.js')
+    ieshiv_url = join_url(static_url, 'js', 'ieshiv.js')
 
     return render_javascript(ieshiv_url)
 
@@ -143,7 +144,7 @@ def leaflet_css(use_cdn=use_cdn_default):
             'integrity': cdn.get('css_integrity')
         }
     else:
-        leaflet_css_url = join_url(static_root, 'css', 'leaflet.css')
+        leaflet_css_url = join_url(static_url, 'css', 'leaflet.css')
 
     return render_css(leaflet_css_url)
 
@@ -157,7 +158,7 @@ def leaflet_javascript(use_cdn=use_cdn_default):
             'integrity': cdn.get('javascript_integrity')
         }
     else:
-        leaflet_js_url = join_url(static_root, 'js', 'leaflet.js')
+        leaflet_js_url = join_url(static_url, 'js', 'leaflet.js')
 
     javascripts = [leaflet_js_url]
 

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 import sys
 import warnings
 
@@ -9,59 +10,59 @@ import subresource_integrity
 from django.conf import settings
 from django.utils.safestring import mark_safe
 
+static_url = getattr(settings, "STATIC_URL", "/static/")
+static_path = getattr(settings, "STATIC_ROOT", False)
+
 if sys.version_info[0] > 2:
-    from future.types.newstr import unicode
     from future.standard_library import install_aliases
 
     # For the future library so we can be Python 2 and 3 compatible
     install_aliases()
 
 
-def get_subresource_integrity(script_path):
-    if "https" in script_path:
-        resource = requests.get(script_path, verify=True)
-        resource_text = resource.text
+def find_static_file(relative_path):
+    static_dirs = list(getattr(settings, "STATICFILES_DIRS", []))
+    static_dirs.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), "static"))
+    for static_dir in static_dirs:
+        actual_path = os.path.join(static_dir, relative_path)
+        if os.path.exists(actual_path):
+            return actual_path
+    return False
 
-    elif "http" in script_path:
-        resource = requests.get(script_path)
-        warnings.warn("SRI over HTTP. It is recommended to only load remote scripts over HTTPS.")
+
+def path_explode(path_string):
+    return re.split(r"/|\\", path_string)
+
+
+def get_subresource_integrity(script_path):
+    retn = ""
+
+    is_https = "https" in script_path
+    if "http" in script_path:
+        resource = requests.get(script_path, verify=is_https)
+        if not is_https:
+            warnings.warn("SRI over HTTP. It is recommended to only load remote scripts over HTTPS.")
         resource_text = resource.text
 
     else:
-        script_path_normalized = os.path.join(*script_path.split("/"))
-        static_root_normalized = os.path.join(*os.path.split(os.path.dirname(settings.STATIC_ROOT)))
-        script_file_path = os.path.join(static_root_normalized, script_path_normalized)
+        relative_path = script_path.replace(static_url, "")
+        script_file_path = find_static_file(relative_path)
 
-        with open(script_file_path, "r") as sf:
-            resource_text = sf.read()
-            sf.close()
+        if script_file_path:
+            with open(script_file_path, "r") as sf:
+                resource_text = sf.read()
+                sf.close()
 
-    return subresource_integrity.render(resource_text.encode())
+            retn = subresource_integrity.render(resource_text.encode())
+
+    return retn
 
 
-def join_url(*path_parts):
-    path_pieces = []
-    path_parts = list(path_parts)
+def join_url(*args):
+    os_path = os.path.join(*args)
+    path_parts = path_explode(os_path)
 
-    is_root = False
-    if path_parts[0] and path_parts[0][0] == "/":
-        is_root = True
-
-    for path_part in path_parts:
-        if path_part:
-            if isinstance(path_part, (str, unicode)) and "/" in path_part:
-                pieces = path_part.split("/")
-                path_pieces.append(join_url(*pieces))
-
-            elif isinstance(path_part, (str, unicode)) and "/" not in path_part:
-                path_pieces.append(path_part)
-
-    path_string = "/".join(path_pieces)
-
-    if is_root:
-        path_string = "/%s" % path_string
-
-    return path_string
+    return "/".join(path_parts)
 
 
 def render_css(css_files):
