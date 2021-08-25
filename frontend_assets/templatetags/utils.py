@@ -118,6 +118,6 @@ def render_javascript(javascripts):
 def render_javascript_code(code_parts):
     code = "\n".join(code_parts)
 
-    integrity = subresource_integrity.render(code)
+    integrity = subresource_integrity.render(code.encode("utf-8"))
 
     return mark_safe('<script integrity="%s">%s</script>' % (integrity, code))
